@@ -2,3 +2,4 @@ fastapi
 scikit-learn
 joblib
 uvicorn
+mecab-python3
