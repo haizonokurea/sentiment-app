@@ -1,21 +1,14 @@
 import pandas as pd
 import joblib
-import MeCab
+from janome.tokenizer import Tokenizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
 
-# MeCabで単語に分割する関数
-tagger = MeCab.Tagger("-r /etc/mecabrc")
+t = Tokenizer()
 
 def tokenize(text):
-    node = tagger.parseToNode(text)
-    words = []
-    while node:
-        if node.surface:
-            words.append(node.surface)
-        node = node.next
-    return " ".join(words)
+    tokens = t.tokenize(text)
+    return " ".join([token.surface for token in tokens])
 
 # データ読み込み
 df = pd.read_csv("data/sentiment_dataset.csv")

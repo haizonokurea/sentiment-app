@@ -1,5 +1,5 @@
 fastapi
+uvicorn
+janome
 scikit-learn
 joblib
-uvicorn
-mecab-python3
