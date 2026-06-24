@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import anthropic
+from janome.tokenizer import Tokenizer
+import joblib
 import os
 
 app = FastAPI()
@@ -13,23 +14,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+t = Tokenizer()
+model = joblib.load(os.path.join(os.path.dirname(__file__), "../models/model.joblib"))
+vectorizer = joblib.load(os.path.join(os.path.dirname(__file__), "../models/vectorizer.joblib"))
+
+def tokenize(text):
+    tokens = t.tokenize(text)
+    return " ".join([token.reading if token.reading != '*' else token.surface for token in tokens])
 
 class TextInput(BaseModel):
     text: str
 
 @app.post("/predict")
 def predict(input: TextInput):
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=10,
-        messages=[
-            {
-                "role": "user",
-                "content": f"次の日本語テキストの感情を判定してください。「ポジティブ」か「ネガティブ」の一言だけ答えてください。\n\nテキスト：{input.text}"
-            }
-        ]
-    )
-    sentiment = message.content[0].text.strip()
-    label = 1 if "ポジティブ" in sentiment else 0
+    tokenized = tokenize(input.text)
+    X_vec = vectorizer.transform([tokenized])
+    label = int(model.predict(X_vec)[0])
+    sentiment = "ポジティブ" if label == 1 else "ネガティブ"
     return {"text": input.text, "label": label, "sentiment": sentiment}

@@ -8,7 +8,7 @@ t = Tokenizer()
 
 def tokenize(text):
     tokens = t.tokenize(text)
-    return " ".join([token.surface for token in tokens])
+    return " ".join([token.reading if token.reading != '*' else token.surface for token in tokens])
 
 # データ読み込み
 df = pd.read_csv("data/sentiment_dataset.csv")
