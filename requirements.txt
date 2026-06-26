@@ -3,3 +3,4 @@ uvicorn
 janome
 scikit-learn
 joblib
+oseti
